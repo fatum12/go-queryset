@@ -10,46 +10,55 @@ var qsTmpl = template.Must(
 )
 
 const qsCode = `
-// ===== BEGIN of all query sets
-
 {{ range .Configs }}
-  {{ $ft := printf "%s%s" .StructName "DBSchemaField" }}
-  // ===== BEGIN of query set {{ .Name }}
+	{{ $ft := printf "%s%s" .StructName "DBSchemaField" }}
+	// ===== BEGIN of query set {{ .Name }}
 
 	// {{ .Name }} is an queryset type for {{ .StructName }}
-  type {{ .Name }} struct {
-	  db *gorm.DB
-  }
+	type {{ .Name }} struct {
+		db *gorm.DB
+	}
 
-  // New{{ .Name }} constructs new {{ .Name }}
-  func New{{ .Name }}(db *gorm.DB) {{ .Name }} {
-	  return {{ .Name }}{
-		  db: db.Model(&{{ .StructName }}{}),
-	  }
-  }
+	// New{{ .Name }} constructs new {{ .Name }}
+	func New{{ .Name }}(db *gorm.DB) {{ .Name }} {
+		return {{ .Name }}{
+			db: db.Model(&{{ .StructName }}{}),
+		}
+	}
 
-  func (qs {{ .Name }}) w(db *gorm.DB) {{ .Name }} {
-	  return New{{ .Name }}(db)
-  }
+	func (qs {{ .Name }}) w(db *gorm.DB) {{ .Name }} {
+		return New{{ .Name }}(db)
+	}
 
-  func (qs {{ .Name }}) Select(fields ...{{ $ft }}) {{ .Name }} {
-	  names := []string{}
-	  for _, f := range fields {
-		  names = append(names, f.String())
-	  }
+	func (qs {{ .Name }}) joinFields(fields []{{ $ft }}, prefix, suffix, separator string) string {
+		names := make([]string, len(fields))
+		for i, f := range fields {
+			names[i] = prefix + f.String() + suffix
+		}
+		return strings.Join(names, separator)
+	}
 
-	  return qs.w(qs.db.Select(strings.Join(names, ",")))
-  }
+	func (qs {{ .Name }}) Select(fields ...{{ $ft }}) {{ .Name }} {
+		return qs.w(qs.db.Select(qs.joinFields(fields, "", "", ", ")))
+	}
+
+	func (qs {{ .Name }}) OrderAscBy(fields ...{{ $ft }}) {{ .Name }} {
+		return qs.w(qs.db.Order(qs.joinFields(fields, "", " ASC", ", ")))
+	}
+
+	func (qs {{ .Name }}) OrderDescBy(fields ...{{ $ft }}) {{ .Name }} {
+		return qs.w(qs.db.Order(qs.joinFields(fields, "", " DESC", ", ")))
+	}
 
 	{{ range .Methods }}
 		{{ .GetDoc .GetMethodName }}
 		func ({{ .GetReceiverDeclaration }}) {{ .GetMethodName }}({{ .GetArgsDeclaration }})
 		{{- .GetReturnValuesDeclaration }} {
-      {{ .GetBody }}
+		{{ .GetBody }}
 		}
 	{{ end }}
 
-  // ===== END of query set {{ .Name }}
+	// ===== END of query set {{ .Name }}
 
 	// ===== BEGIN of {{ .StructName }} modifiers
 
@@ -112,6 +121,4 @@ const qsCode = `
 
 	// ===== END of {{ .StructName }} modifiers
 {{ end }}
-
-// ===== END of all query sets
 `

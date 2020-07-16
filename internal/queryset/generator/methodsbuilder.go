@@ -30,8 +30,6 @@ func (b *methodsBuilder) getQuerySetMethodsForField(f field.Info) []methods.Meth
 	basicTypeMethods := []methods.Method{
 		methods.NewBinaryFilterMethod(fctx.WithOperationName("eq")),
 		methods.NewBinaryFilterMethod(fctx.WithOperationName("ne")),
-		methods.NewOrderAscByMethod(fctx),
-		methods.NewOrderDescByMethod(fctx),
 	}
 
 	if !f.IsTime {

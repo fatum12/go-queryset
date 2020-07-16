@@ -368,22 +368,6 @@ func NewPreloadMethod(ctx QsFieldContext) FieldOperationNoArgsMethod {
 	return r
 }
 
-// NewOrderAscByMethod creates new OrderBy method ascending
-func NewOrderAscByMethod(ctx QsFieldContext) FieldOperationNoArgsMethod {
-	r := newFieldOperationNoArgsMethod(ctx.WithOperationName("OrderAscBy"), true)
-	r.setGormMethodName("Order")
-	r.setGormMethodArgs(fmt.Sprintf(`"%s ASC"`, ctx.fieldDBName()))
-	return r
-}
-
-// NewOrderDescByMethod creates new OrderBy method descending
-func NewOrderDescByMethod(ctx QsFieldContext) FieldOperationNoArgsMethod {
-	r := newFieldOperationNoArgsMethod(ctx.WithOperationName("OrderDescBy"), true)
-	r.setGormMethodName("Order")
-	r.setGormMethodArgs(fmt.Sprintf(`"%s DESC"`, ctx.fieldDBName()))
-	return r
-}
-
 // NewLimitMethod creates Limit method
 func NewLimitMethod(qsTypeName string) StructOperationOneArgMethod {
 	return newStructOperationOneArgMethod("Limit", "int", qsTypeName)
