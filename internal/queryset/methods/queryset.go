@@ -288,7 +288,7 @@ func NewDeleteMethod(qsTypeName, structTypeName string) DeleteMethod {
 		constBodyMethod: newConstBodyMethod(
 			strings.Join([]string{
 				"db := qs.db.Delete(" + structTypeName + "{}" + ")",
-				"return db.RowsAffected, db.Error",
+				"return db.RowsAffected, errors.WithStack(db.Error)",
 			}, "\n"),
 		),
 	}
@@ -311,7 +311,7 @@ func NewCountMethod(qsTypeName string) CountMethod {
 		constRetMethod:     newConstRetMethod("(int, error)"),
 		constBodyMethod: newConstBodyMethod(`var count int
 			err := %s.Count(&count).Error
-			return count, err`, qsDbName),
+			return count, errors.WithStack(err)`, qsDbName),
 	}
 }
 
@@ -348,7 +348,7 @@ func NewAllMethod(structName, qsTypeName string) AllMethod {
 		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
 		constRetMethod:     newConstRetMethod("(ret []*" + structName + ", err error)"),
 		constBodyMethod: newConstBodyMethod(`err = %s.Find(&ret).Error
-			return`, qsDbName),
+			return ret, errors.WithStack(err)`, qsDbName),
 	}
 }
 
@@ -371,7 +371,7 @@ func NewOneMethod(structName, qsTypeName string) OneMethod {
 			if err == gorm.ErrRecordNotFound {
 				return nil, nil
 			}
-			return &ret, err`, structName, qsDbName),
+			return &ret, errors.WithStack(err)`, structName, qsDbName),
 	}
 
 	const doc = `// One is used to retrieve one result. It returns nil if nothing was fetched`

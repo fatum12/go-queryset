@@ -70,7 +70,7 @@ func NewUpdaterUpdateMethod(updaterTypeName string) UpdaterUpdateMethod {
 		constBodyMethod: newConstBodyMethod(
 			strings.Join([]string{
 				"db := u.db.Updates(u.fields)",
-				"return db.RowsAffected, db.Error",
+				"return db.RowsAffected, errors.WithStack(db.Error)",
 			}, "\n"),
 		),
 	}

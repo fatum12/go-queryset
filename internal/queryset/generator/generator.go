@@ -54,12 +54,12 @@ func (g Generator) writeQuerySetsToOutput(r io.Reader, packageName, outFile stri
 	package %s
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/pkg/errors"
 )
 `
 
