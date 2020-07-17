@@ -87,7 +87,6 @@ func (b *methodsBuilder) buildUpdaterStructMethods() {
 	updaterTypeName := getUpdaterTypeName(b.s.TypeName)
 	b.ret = append(b.ret,
 		methods.NewUpdaterUpdateMethod(updaterTypeName),
-		methods.NewUpdaterUpdateNumMethod(updaterTypeName),
 	)
 }
 
@@ -128,12 +127,10 @@ func (b *methodsBuilder) buildAggrMethods() *methodsBuilder {
 func (b *methodsBuilder) buildCRUDMethods() *methodsBuilder {
 	b.ret = append(b.ret,
 		methods.NewGetUpdaterMethod(b.qsTypeName(), getUpdaterTypeName(b.s.TypeName)),
-		methods.NewDeleteMethod(b.qsTypeName(), b.s.TypeName),
 		methods.NewStructModifierMethod("Create", b.s.TypeName),
 		methods.NewStructModifierMethod("Save", b.s.TypeName),
 		methods.NewStructModifierMethod("Delete", b.s.TypeName),
-		methods.NewDeleteNumMethod(b.qsTypeName(), b.s.TypeName),
-		methods.NewDeleteNumUnscopedMethod(b.qsTypeName(), b.s.TypeName),
+		methods.NewDeleteMethod(b.qsTypeName(), b.s.TypeName),
 		methods.NewGetDBMethod(b.qsTypeName()),
 	)
 

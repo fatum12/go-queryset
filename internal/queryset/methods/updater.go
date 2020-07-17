@@ -52,26 +52,8 @@ func NewUpdaterSetMethod(fieldName, fieldTypeName,
 	return r
 }
 
-// UpdaterUpdateMethod creates Update method
+// UpdaterUpdateMethod describes Update method
 type UpdaterUpdateMethod struct {
-	namedMethod
-	baseUpdaterMethod
-	noArgsMethod
-	errorRetMethod
-	constBodyMethod
-}
-
-// NewUpdaterUpdateMethod create new Update method
-func NewUpdaterUpdateMethod(updaterTypeName string) UpdaterUpdateMethod {
-	return UpdaterUpdateMethod{
-		namedMethod:       newNamedMethod("Update"),
-		baseUpdaterMethod: newBaseUpdaterMethod(updaterTypeName),
-		constBodyMethod:   newConstBodyMethod("return u.db.Updates(u.fields).Error"),
-	}
-}
-
-// UpdaterUpdateNumMethod describes UpdateNum method
-type UpdaterUpdateNumMethod struct {
 	namedMethod
 	baseUpdaterMethod
 	noArgsMethod
@@ -79,10 +61,10 @@ type UpdaterUpdateNumMethod struct {
 	constBodyMethod
 }
 
-// NewUpdaterUpdateNumMethod creates new UpdateNum method
-func NewUpdaterUpdateNumMethod(updaterTypeName string) UpdaterUpdateNumMethod {
-	return UpdaterUpdateNumMethod{
-		namedMethod:       newNamedMethod("UpdateNum"),
+// NewUpdaterUpdateMethod creates new Update method
+func NewUpdaterUpdateMethod(updaterTypeName string) UpdaterUpdateMethod {
+	return UpdaterUpdateMethod{
+		namedMethod:       newNamedMethod("Update"),
 		baseUpdaterMethod: newBaseUpdaterMethod(updaterTypeName),
 		constRetMethod:    newConstRetMethod("(int64, error)"),
 		constBodyMethod: newConstBodyMethod(

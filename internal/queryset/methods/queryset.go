@@ -271,26 +271,6 @@ func NewGetUpdaterMethod(qsTypeName, updaterTypeMethod string) GetUpdaterMethod 
 
 // DeleteMethod creates Delete method
 type DeleteMethod struct {
-	baseQuerySetMethod
-
-	namedMethod
-	noArgsMethod
-
-	gormErroredMethod
-}
-
-// NewDeleteMethod creates Delete method
-func NewDeleteMethod(qsTypeName, structTypeName string) DeleteMethod {
-	return DeleteMethod{
-
-		namedMethod:        newNamedMethod("Delete"),
-		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
-		gormErroredMethod:  newGormErroredMethod("Delete", structTypeName+"{}", qsDbName),
-	}
-}
-
-// DeleteNumMethod creates DeleteNum method
-type DeleteNumMethod struct {
 	namedMethod
 	baseQuerySetMethod
 
@@ -299,40 +279,15 @@ type DeleteNumMethod struct {
 	constRetMethod
 }
 
-// NewDeleteNumMethod delete row count
-func NewDeleteNumMethod(qsTypeName, structTypeName string) DeleteNumMethod {
-	return DeleteNumMethod{
-		namedMethod:        newNamedMethod("DeleteNum"),
+// NewDeleteMethod delete row count
+func NewDeleteMethod(qsTypeName, structTypeName string) DeleteMethod {
+	return DeleteMethod{
+		namedMethod:        newNamedMethod("Delete"),
 		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
 		constRetMethod:     newConstRetMethod("(int64, error)"),
 		constBodyMethod: newConstBodyMethod(
 			strings.Join([]string{
 				"db := qs.db.Delete(" + structTypeName + "{}" + ")",
-				"return db.RowsAffected, db.Error",
-			}, "\n"),
-		),
-	}
-}
-
-// DeleteNumUnscopedMethod creates DeleteNumUnscoped method for performing hard deletes
-type DeleteNumUnscopedMethod struct {
-	namedMethod
-	baseQuerySetMethod
-
-	noArgsMethod
-	constBodyMethod
-	constRetMethod
-}
-
-// NewDeleteNumUnscopedMethod delete row count for hard deletes
-func NewDeleteNumUnscopedMethod(qsTypeName, structTypeName string) DeleteNumUnscopedMethod {
-	return DeleteNumUnscopedMethod{
-		namedMethod:        newNamedMethod("DeleteNumUnscoped"),
-		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
-		constRetMethod:     newConstRetMethod("(int64, error)"),
-		constBodyMethod: newConstBodyMethod(
-			strings.Join([]string{
-				"db := qs.db.Unscoped().Delete(" + structTypeName + "{}" + ")",
 				"return db.RowsAffected, db.Error",
 			}, "\n"),
 		),
@@ -378,16 +333,48 @@ func NewOffsetMethod(qsTypeName string) StructOperationOneArgMethod {
 	return newStructOperationOneArgMethod("Offset", "int", qsTypeName)
 }
 
+type AllMethod struct {
+	baseQuerySetMethod
+	namedMethod
+	noArgsMethod
+	constRetMethod
+	constBodyMethod
+}
+
 // NewAllMethod creates All method
-func NewAllMethod(structName, qsTypeName string) SelectMethod {
-	return newSelectMethod("All", "Find", fmt.Sprintf("*[]%s", structName), qsTypeName)
+func NewAllMethod(structName, qsTypeName string) AllMethod {
+	return AllMethod{
+		namedMethod:        newNamedMethod("All"),
+		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
+		constRetMethod:     newConstRetMethod("(ret []*" + structName + ", err error)"),
+		constBodyMethod: newConstBodyMethod(`err = %s.Find(&ret).Error
+			return`, qsDbName),
+	}
+}
+
+type OneMethod struct {
+	baseQuerySetMethod
+	namedMethod
+	noArgsMethod
+	constRetMethod
+	constBodyMethod
 }
 
 // NewOneMethod creates One method
-func NewOneMethod(structName, qsTypeName string) SelectMethod {
-	r := newSelectMethod("One", "First", fmt.Sprintf("*%s", structName), qsTypeName)
-	const doc = `// One is used to retrieve one result. It returns gorm.ErrRecordNotFound
-	// if nothing was fetched`
+func NewOneMethod(structName, qsTypeName string) OneMethod {
+	r := OneMethod{
+		namedMethod:        newNamedMethod("One"),
+		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
+		constRetMethod:     newConstRetMethod("(*" + structName + ", error)"),
+		constBodyMethod: newConstBodyMethod(`var ret %s
+			err := %s.First(&ret).Error
+			if err == gorm.ErrRecordNotFound {
+				return nil, nil
+			}
+			return &ret, err`, structName, qsDbName),
+	}
+
+	const doc = `// One is used to retrieve one result. It returns nil if nothing was fetched`
 	r.setDoc(doc)
 	return r
 }
