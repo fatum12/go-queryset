@@ -11,7 +11,7 @@ var qsTmpl = template.Must(
 
 const qsCode = `
 {{ range .Configs }}
-	{{ $ft := printf "%s%s" .StructName "DBSchemaField" }}
+	{{ $ft := printf "%s%s" .StructName "DBField" }}
 	// ===== BEGIN of query set {{ .Name }}
 
 	// {{ .Name }} is an queryset type for {{ .StructName }}
