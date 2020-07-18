@@ -50,6 +50,13 @@ const qsCode = `
 		return qs.w(qs.db.Order(qs.joinFields(fields, "", " DESC", ", ")))
 	}
 
+	func (qs {{ .Name }}) Exists() (bool, error) {
+		sub := qs.db.Select("1").Limit(1)
+		var exists bool
+		err := qs.db.New().Raw("SELECT EXISTS(?)", sub.QueryExpr()).Row().Scan(&exists)
+		return exists, errors.WithStack(err)
+	}
+
 	{{ range .Methods }}
 		{{ .GetDoc .GetMethodName }}
 		func ({{ .GetReceiverDeclaration }}) {{ .GetMethodName }}({{ .GetArgsDeclaration }})
