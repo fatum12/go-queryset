@@ -17,13 +17,13 @@ type BaseInfo struct {
 	IsNumeric bool
 	IsTime    bool
 	IsString  bool
+	IsSlice   bool
 }
 
 type Info struct {
 	pointed *BaseInfo
 	BaseInfo
 	IsPointer bool
-	IsSlice   bool
 }
 
 func (fi Info) GetPointed() Info {
@@ -135,9 +135,17 @@ func (g InfoGenerator) GenFieldInfo(f Field) *Info {
 			}
 		case *types.Struct:
 			bi.IsStruct = true
+			bi.IsSlice = true
 			return &Info{
 				BaseInfo: bi,
-				IsSlice:  true,
+			}
+		case *types.Pointer:
+			if _, ok := u.Elem().Underlying().(*types.Struct); ok {
+				bi.IsStruct = true
+				bi.IsSlice = true
+				return &Info{
+					BaseInfo: bi,
+				}
 			}
 		}
 		return nil
