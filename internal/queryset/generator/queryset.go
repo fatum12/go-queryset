@@ -88,11 +88,18 @@ func generateQuerySetConfigs(types *types.Package,
 		b := newMethodsBuilder(s, fields)
 		methods := b.Build()
 
+		var selectableFields []field.Info
+		for _, f := range fields {
+			if f.IsSelectable() {
+				selectableFields = append(selectableFields, f)
+			}
+		}
+
 		qsConfig := querySetStructConfig{
 			StructName: s.TypeName,
 			Name:       s.TypeName + "QuerySet",
 			Methods:    methods,
-			Fields:     fields,
+			Fields:     selectableFields,
 		}
 		sort.Sort(qsConfig.Methods) // make output queryset stable
 		querySetStructConfigs = append(querySetStructConfigs, qsConfig)

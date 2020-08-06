@@ -57,16 +57,20 @@ func (b *methodsBuilder) getQuerySetMethodsForField(f field.Info) []methods.Meth
 		return append(basicTypeMethods, numericMethods...)
 	}
 
-	if f.IsStruct {
+	if f.IsStruct || f.IsSlice {
 		// Association was found (any struct or struct pointer)
 		return []methods.Method{methods.NewPreloadMethod(fctx)}
 	}
 
 	if f.IsPointer {
-		ptrMethods := b.getQuerySetMethodsForField(f.GetPointed())
-		return append(ptrMethods,
-			methods.NewIsNullMethod(fctx),
-			methods.NewIsNotNullMethod(fctx))
+		pointed := f.GetPointed()
+		ptrMethods := b.getQuerySetMethodsForField(pointed)
+		if pointed.IsSelectable() {
+			ptrMethods = append(ptrMethods,
+				methods.NewIsNullMethod(fctx),
+				methods.NewIsNotNullMethod(fctx))
+		}
+		return ptrMethods
 	}
 
 	// it's a string

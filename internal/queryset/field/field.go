@@ -20,6 +20,10 @@ type BaseInfo struct {
 	IsSlice   bool
 }
 
+func (bi BaseInfo) IsSelectable() bool {
+	return !bi.IsStruct && !bi.IsSlice
+}
+
 type Info struct {
 	pointed *BaseInfo
 	BaseInfo
@@ -30,6 +34,13 @@ func (fi Info) GetPointed() Info {
 	return Info{
 		BaseInfo: *fi.pointed,
 	}
+}
+
+func (fi Info) IsSelectable() bool {
+	if fi.pointed != nil {
+		return fi.pointed.IsSelectable()
+	}
+	return fi.BaseInfo.IsSelectable()
 }
 
 type InfoGenerator struct {
@@ -134,14 +145,12 @@ func (g InfoGenerator) GenFieldInfo(f Field) *Info {
 				}
 			}
 		case *types.Struct:
-			bi.IsStruct = true
 			bi.IsSlice = true
 			return &Info{
 				BaseInfo: bi,
 			}
 		case *types.Pointer:
 			if _, ok := u.Elem().Underlying().(*types.Struct); ok {
-				bi.IsStruct = true
 				bi.IsSlice = true
 				return &Info{
 					BaseInfo: bi,
